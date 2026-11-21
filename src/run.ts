@@ -1,5 +1,5 @@
-import { createSandbox, deleteSandbox } from "./sandbox.js";
-import type { Adapter, Result, Scenario } from "./types.js";
+import { createSandbox, deleteSandbox } from "./sandbox.ts";
+import type { Adapter, Result, RunOutput, Scenario } from "./types.ts";
 
 export async function runScenario(
   adapter: Adapter,
@@ -8,7 +8,7 @@ export async function runScenario(
   const sandbox = createSandbox();
   try {
     scenario.prepare?.(sandbox);
-    const outputs = [];
+    const outputs: RunOutput[] = [];
     for (const probe of scenario.probes) {
       outputs.push(
         await adapter.run({

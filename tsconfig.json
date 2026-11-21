@@ -13,9 +13,11 @@
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "declaration": true,
-    "noEmit": true,
-    "forceConsistentCasingInFileNames": true
+    "rootDir": "src",
+    "outDir": "dist",
+    "rewriteRelativeImportExtensions": true
   },
-  "include": ["src", "test", "vitest.config.ts"]
+  "include": ["src"]
 }

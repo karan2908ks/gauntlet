@@ -2,13 +2,12 @@
 
 import path from "node:path";
 import process from "node:process";
-import type { Writable } from "node:stream";
 import { pathToFileURL } from "node:url";
-import { adapters } from "./adapters/reference.js";
-import { formatJson, formatList, formatRun } from "./format.js";
-import { runAll } from "./run.js";
-import { scenarios } from "./scenarios.js";
-import type { Scenario } from "./types.js";
+import { adapters } from "./adapters/reference.ts";
+import { formatJson, formatList, formatRun } from "./format.ts";
+import { runAll } from "./run.ts";
+import { scenarios } from "./scenarios.ts";
+import type { Scenario } from "./types.ts";
 
 const USAGE =
   "usage: gauntlet list | gauntlet run --adapter <name> [--scenario <id>] [--json]\n";
@@ -21,8 +20,8 @@ type RunFlags = {
 
 export async function runCli(
   argv: readonly string[],
-  stdout: Writable,
-  stderr: Writable,
+  stdout: NodeJS.WritableStream,
+  stderr: NodeJS.WritableStream,
 ): Promise<number> {
   const command = argv[0];
   if (command === "list") {
@@ -63,6 +62,7 @@ function parseRunFlags(argv: readonly string[]): RunFlags | { error: string } {
   let json = false;
   for (let index = 0; index < argv.length; index += 1) {
     const token = argv[index];
+    if (token === undefined) continue;
     if (token === "--json") {
       json = true;
       continue;
@@ -77,7 +77,6 @@ function parseRunFlags(argv: readonly string[]): RunFlags | { error: string } {
       index += 1;
       continue;
     }
-    if (token === undefined) return { error: USAGE.trim() };
     return { error: `unknown argument ${token}` };
   }
   if (adapter === undefined) return { error: "missing --adapter" };
@@ -95,7 +94,7 @@ function selectScenarios(
 
 function isDirectRun(): boolean {
   const entry = process.argv[1];
-  if (!entry) return false;
+  if (entry === undefined || entry.length === 0) return false;
   return import.meta.url === pathToFileURL(path.resolve(entry)).href;
 }
 

@@ -6,16 +6,15 @@ import {
   writeFileSync,
 } from "node:fs";
 import path from "node:path";
-import { FIXTURE_NOTE, FIXTURE_SECRET } from "./sandbox.js";
-import type { Check, RunOutput, Sandbox, Scenario } from "./types.js";
+import { FIXTURE_NOTE, FIXTURE_SECRET } from "./sandbox.ts";
+import type { Check, RunOutput, Sandbox, Scenario } from "./types.ts";
 
 const WHITESPACE_PAYLOAD = `<read_file>
 <path> notes.txt </path>
 <encoding> utf-8 </encoding>
 </read_file>`;
 
-const TRUNCATED_PAYLOAD =
-  '{"name":"read_file","arguments":{"path":"notes.txt",';
+const TRUNCATED_PAYLOAD = '{"name":"read_file","arguments":{"path":"notes.txt"';
 
 const TRAILING_COMMA_PAYLOAD =
   '{"name":"read_file","arguments":{"path":"notes.txt",}}';
@@ -29,7 +28,7 @@ export const scenarios: readonly Scenario[] = [
     title: "Padded path and enum",
     category: "whitespace",
     summary:
-      "XML path and encoding keep their padding. Nanocoder issue 2305 stopped trimming these strings.",
+      "Nano-Collective/nanocoder issue 2305 stopped trimming padded path and enum strings.",
     aborted: false,
     probes: [() => WHITESPACE_PAYLOAD],
     expect({ outputs }) {
@@ -39,15 +38,12 @@ export const scenarios: readonly Scenario[] = [
         return fail("refused a padded but valid call");
       const pathArg = output.call.arguments.path;
       const encoding = output.call.arguments.encoding;
-      if (
-        output.call.name !== "read_file" ||
-        pathArg !== "notes.txt" ||
-        encoding !== "utf-8"
-      ) {
+      if (pathArg !== "notes.txt" || encoding !== "utf-8") {
         return fail("path or encoding kept surrounding whitespace");
       }
-      if (output.result !== FIXTURE_NOTE)
+      if (output.call.name !== "read_file" || output.result !== FIXTURE_NOTE) {
         return fail("read did not return notes.txt");
+      }
       return pass("trimmed path and encoding, read notes.txt");
     },
   },
@@ -157,16 +153,19 @@ export const scenarios: readonly Scenario[] = [
     expect({ outputs }) {
       const dotdot = outputs[0];
       const absolute = outputs[1];
-      if (!dotdot || !absolute) return fail("no output");
-      const dotdotLeak = leak(dotdot);
-      if (dotdotLeak === "secret")
+      if (dotdot === undefined || absolute === undefined) {
+        return fail("dotdot was executed");
+      }
+      if (containsSecret(dotdot)) {
         return fail("dotdot read a file outside the workspace");
-      if (dotdotLeak === "executed") return fail("dotdot was executed");
-      const absoluteLeak = leak(absolute);
-      if (absoluteLeak === "secret")
+      }
+      if (containsSecret(absolute)) {
         return fail("absolute path read a file outside the workspace");
-      if (absoluteLeak === "executed")
+      }
+      if (dotdot.status === "executed") return fail("dotdot was executed");
+      if (absolute.status === "executed") {
         return fail("absolute path was executed");
+      }
       return pass("rejected dotdot and absolute paths");
     },
   },
@@ -282,18 +281,18 @@ function sole(outputs: readonly RunOutput[]): RunOutput | undefined {
   return outputs.length === 1 ? outputs[0] : undefined;
 }
 
-function leak(output: RunOutput): "secret" | "executed" | "refused" {
-  if (output.status === "refused") return "refused";
-  if (output.result.includes(FIXTURE_SECRET)) return "secret";
-  return "executed";
+function containsSecret(output: RunOutput): boolean {
+  return output.status === "executed" && output.result.includes(FIXTURE_SECRET);
 }
 
 function workspaceFile(sandbox: Sandbox, name: string): string {
   return path.join(sandbox.workspaceDir, name);
 }
 
-function readNote(sandbox: Sandbox): string {
-  return readFileSync(workspaceFile(sandbox, "notes.txt"), "utf8");
+function readNote(sandbox: Sandbox): string | undefined {
+  const file = workspaceFile(sandbox, "notes.txt");
+  if (!existsSync(file)) return undefined;
+  return readFileSync(file, "utf8");
 }
 
 function pass(reason: string): Check {

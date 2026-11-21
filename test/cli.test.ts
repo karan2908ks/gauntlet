@@ -2,8 +2,8 @@ import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { Writable } from "node:stream";
 import { expect, test } from "vitest";
-import { runCli } from "../src/cli.js";
-import { scenarios } from "../src/scenarios.js";
+import { runCli } from "../src/cli.ts";
+import { scenarios } from "../src/scenarios.ts";
 
 test("list prints every scenario id", async () => {
   const stdout = memoryStream();

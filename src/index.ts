@@ -2,10 +2,10 @@ export {
   adapters,
   referenceHardened,
   referenceNaive,
-} from "./adapters/reference.js";
-export { runAll, runScenario } from "./run.js";
-export { FIXTURE_NOTE, FIXTURE_SECRET } from "./sandbox.js";
-export { scenarios } from "./scenarios.js";
+} from "./adapters/reference.ts";
+export { runAll, runScenario } from "./run.ts";
+export { FIXTURE_NOTE, FIXTURE_SECRET } from "./sandbox.ts";
+export { scenarios } from "./scenarios.ts";
 export type {
   Adapter,
   AdapterRunInput,
@@ -16,4 +16,4 @@ export type {
   Sandbox,
   Scenario,
   ToolCall,
-} from "./types.js";
+} from "./types.ts";

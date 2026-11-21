@@ -4,10 +4,10 @@ import { expect, test } from "vitest";
 import {
   referenceHardened,
   referenceNaive,
-} from "../src/adapters/reference.js";
-import { runScenario } from "../src/run.js";
-import { scenarios } from "../src/scenarios.js";
-import type { Adapter } from "../src/types.js";
+} from "../src/adapters/reference.ts";
+import { runScenario } from "../src/run.ts";
+import { scenarios } from "../src/scenarios.ts";
+import type { Adapter } from "../src/types.ts";
 
 const ids = scenarios.map((scenario) => scenario.id);
 

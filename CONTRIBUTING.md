@@ -13,7 +13,7 @@ pnpm typecheck
 pnpm test
 ```
 
-`node dist/cli.js run --adapter reference-naive` exits 1. That is the naive adapter failing the suite. `reference-hardened` exits 0.
+`pnpm exec gauntlet run --adapter reference-naive` exits 1. That is the naive adapter failing the suite. `reference-hardened` exits 0.
 
 ## Add a scenario
 
@@ -47,7 +47,7 @@ The reference adapters understand two fixture shapes used by the built-in scenar
 
 Three adapters are intentionally not in v0.1. Open an issue before starting one.
 
-- An XML tool-call parser, the class of failure in nanocoder issue 2305.
+- An XML tool-call parser, the Nano-Collective/nanocoder failure class.
 - An OpenAI or Anthropic function-call JSON layer.
 - An MCP filesystem server.
 

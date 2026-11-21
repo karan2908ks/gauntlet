@@ -31,11 +31,12 @@
     ]
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc --noEmit",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "test": "vitest run",
     "lint": "biome check .",
-    "format": "biome check --write ."
+    "format": "biome check --write .",
+    "postinstall": "mkdir -p node_modules/.bin && printf '%s\\n' '#!/bin/sh' 'exec node \"$(dirname \"$0\")/../../dist/cli.js\" \"$@\"' > node_modules/.bin/gauntlet && chmod +x node_modules/.bin/gauntlet"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.8",

@@ -6,7 +6,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import path from "node:path";
-import type { Adapter, RunOutput, ToolCall } from "../types.js";
+import type { Adapter, RunOutput, ToolCall } from "../types.ts";
 
 const MAX_RAW_BYTES = 65536;
 
@@ -91,7 +91,10 @@ function executePayload(
     policy.maxRawBytes !== null &&
     Buffer.byteLength(raw) > policy.maxRawBytes
   ) {
-    return { status: "refused", reason: "argument exceeds 65536 bytes" };
+    return {
+      status: "refused",
+      reason: `argument exceeds ${policy.maxRawBytes} bytes`,
+    };
   }
   const parsed = raw.trimStart().startsWith("<")
     ? parseXml(raw)
@@ -346,9 +349,10 @@ function executeCall(
   ) {
     return { status: "refused", reason: "missing argument" };
   }
+  const encoding = call.arguments.encoding;
   if (
-    call.arguments.encoding !== undefined &&
-    call.arguments.encoding !== "utf-8"
+    encoding !== undefined &&
+    (typeof encoding !== "string" || encoding.trim() !== "utf-8")
   ) {
     return { status: "refused", reason: "encoding not allowed" };
   }
@@ -363,8 +367,14 @@ function executeCall(
   const content = call.arguments.content;
   if (typeof content !== "string")
     return { status: "refused", reason: "missing argument" };
-  writeFileSync(resolved, content);
+  writeFileSync(resolved, content, "utf8");
   return { status: "executed", call, result: "wrote" };
+}
+
+function isOutside(root: string, target: string): boolean {
+  const relative = path.relative(root, target);
+  if (path.isAbsolute(relative)) return true;
+  return relative === ".." || relative.startsWith(`..${path.sep}`);
 }
 
 function resolveUserPath(
@@ -382,16 +392,14 @@ function resolveUserPath(
     return { status: "refused", reason: "parent segment rejected" };
   }
   const resolved = path.resolve(workspace, userPath);
-  const relative = path.relative(workspace, resolved);
-  if (relative.startsWith("..") || path.isAbsolute(relative)) {
+  if (isOutside(workspace, resolved)) {
     return { status: "refused", reason: "path escapes workspace" };
   }
   const realWorkspace = realpathSync(workspace);
   const anchor = existsSync(resolved) ? resolved : path.dirname(resolved);
   if (existsSync(anchor)) {
     const realAnchor = realpathSync(anchor);
-    const realRelative = path.relative(realWorkspace, realAnchor);
-    if (realRelative.startsWith("..") || path.isAbsolute(realRelative)) {
+    if (isOutside(realWorkspace, realAnchor)) {
       return { status: "refused", reason: "symlink escapes workspace" };
     }
   }

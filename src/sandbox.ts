@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { Sandbox } from "./types.js";
+import type { Sandbox } from "./types.ts";
 
 export const FIXTURE_NOTE = "hello\n";
 export const FIXTURE_SECRET = "secret\n";

@@ -1,4 +1,4 @@
-import type { Result } from "./types.js";
+import type { Result } from "./types.ts";
 
 type ListRow = {
   id: string;
